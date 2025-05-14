@@ -1,0 +1,23 @@
+.person-node {
+    -fx-padding: 10px;
+    -fx-spacing: 4px;
+    -fx-alignment: center;
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: #ff0000;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+.marriage-label {
+    -fx-font-size: 12px;
+    -fx-background-color: white;
+    -fx-padding: 2 4 2 4;
+    -fx-background-radius: 3;
+    -fx-border-color: #dddddd;
+    -fx-border-radius: 3;
+}
+
+.relation-line {
+    -fx-stroke: #444444;
+    -fx-stroke-width: 1.5px;
+}
