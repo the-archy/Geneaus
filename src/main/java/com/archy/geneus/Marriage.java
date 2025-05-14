@@ -6,8 +6,6 @@ public class Marriage {
 
     protected final Person spouse;
 
-    private boolean active;
-
     protected LocalDate startDate;
     protected String startArea;
     protected String startCountry;
@@ -16,21 +14,17 @@ public class Marriage {
     private String endArea;
     private String endCountry;
 
-    public Marriage(Person spouse, boolean active) {
+
+    public boolean isActive() {
+        return endDate == null;
+    }
+
+    public Marriage(Person spouse) {
         this.spouse = spouse;
-        this.active = active;
     }
 
     public Person getSpouse() {
         return spouse;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
     public LocalDate getStartDate() {
@@ -69,7 +63,15 @@ public class Marriage {
         return endArea;
     }
 
+    public String getEndCountry() {
+        return endCountry;
+    }
+
     public void setEndArea(String endArea) {
         this.endArea = endArea;
+    }
+
+    public void setEndCountry(String endCountry) {
+        this.endCountry = endCountry;
     }
 }

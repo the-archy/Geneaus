@@ -67,7 +67,6 @@ public class Person implements Comparable<Person> {
 
     public List<Person> getPartners() {
         return marriages.stream()
-                        .filter(Marriage::isActive)
                         .map(Marriage::getSpouse)
                         .collect(Collectors.toList());
     }

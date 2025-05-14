@@ -23,18 +23,22 @@ public class GenealogyApp extends javafx.application.Application {
         var spouse = new Person("2", "Jane Doe");
         spouse.setBirthDate(LocalDate.of(1985, 5, 15));
 
-        person1.addMarriage(new Marriage(spouse, true));
-        spouse.addMarriage(new Marriage(person1, true));
+        person1.addMarriage(new Marriage(spouse));
+        spouse.addMarriage(new Marriage(person1));
 
-        var marriage = person1.getMarriages().get(0);
-        marriage.setStartDate(LocalDate.of(2000, 6, 20));
-        marriage.setStartArea("New York");
-        marriage.setStartCountry("USA");
+        person1.getMarriages().get(0).setStartDate(LocalDate.of(2000, 6, 20));
+        person1.getMarriages().get(0).setStartArea("New York");
+        person1.getMarriages().get(0).setStartCountry("USA");
+        spouse.getMarriages().get(0).setStartDate(LocalDate.of(2000, 6, 20));
+        spouse.getMarriages().get(0).setStartArea("New York");
+        spouse.getMarriages().get(0).setStartCountry("USA");
 
-        var marriage2 = spouse.getMarriages().get(0);
-        marriage2.setStartDate(LocalDate.of(2000, 6, 20));
-        marriage2.setStartArea("New York");
-        marriage2.setStartCountry("USA");
+        person1.getMarriages().get(0).setEndDate(LocalDate.of(2010, 6, 20));
+        person1.getMarriages().get(0).setEndArea("Los Angeles");
+        person1.getMarriages().get(0).setEndCountry("USA");
+        spouse.getMarriages().get(0).setEndDate(LocalDate.of(2010, 6, 20));
+        spouse.getMarriages().get(0).setEndArea("Los Angeles");
+        spouse.getMarriages().get(0).setEndCountry("USA");
 
 
         var child1 = new Person("3", "Alice Doe");

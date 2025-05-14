@@ -14,223 +14,315 @@ public class TreeBuilder {
 
     private final Person root;
 
+    private static final double INITIAL_X = 200;
+    private static final double INITIAL_Y = 150;
+    private static final double SIBLING_SPACING = 160;
+    private static final double PARTNER_SPACING = 200;
+    private static final double CHILD_SPACING = 150;
+    private static final double MARRIAGE_LABEL_OFFSET_MULT = -1.5;
+    private static final double DIVORCE_LABEL_OFFSET_MULT = -2.75;
+    private static final double PANE_PADDING = 100;
+
     public TreeBuilder(Person root) {
         this.root = root;
     }
 
     public Pane build() {
-
         Pane pane = new Pane();
 
         PersonNode rootNode = new PersonNode(root);
-        rootNode.setLayoutX(200);
-        rootNode.setLayoutY(150);
+        rootNode.setLayoutX(INITIAL_X);
+        rootNode.setLayoutY(INITIAL_Y);
         pane.getChildren().add(rootNode);
 
         List<Person> parents = root.getParents();
-        if (parents.size() == 2) {
-            buildTwoParentTree(pane, rootNode, parents);
-        } else if (parents.size() == 1) {
-            buildSingleParentTree(pane, rootNode, parents.get(0));
+        if (!parents.isEmpty()) {
+            buildParentalTree(pane, rootNode, parents);
         }
 
         buildPartnerTree(pane, rootNode);
-
         adjustPaneLayout(pane);
-
         return pane;
     }
 
-    private void buildTwoParentTree(Pane pane, PersonNode rootNode, List<Person> parents) {
-        Person father = parents.get(0);
-        Person mother = parents.get(1);
+    private void buildParentalTree(Pane pane, PersonNode childNode, List<Person> parents) {
 
-        PersonNode fatherNode = new PersonNode(father);
-        PersonNode motherNode = new PersonNode(mother);
+        if (parents.size() == 1) {
+            Person soleParent = parents.get(0);
+            PersonNode parentNode = new PersonNode(soleParent);
 
-        double rootX = rootNode.getLayoutX();
-        double rootY = rootNode.getLayoutY();
+            double childX = childNode.getLayoutX();
+            double childY = childNode.getLayoutY();
+            double parentY = childY - PARTNER_SPACING;
 
-        double parentY = rootY - 150;
-        double parentSpacing = 160;
-
-        double centerX = rootX + PersonNode.WIDTH / 2;
-        double startX = centerX - parentSpacing / 2 - PersonNode.WIDTH;
-
-        fatherNode.setLayoutX(startX);
-        fatherNode.setLayoutY(parentY);
-        motherNode.setLayoutX(startX + parentSpacing + PersonNode.WIDTH);
-        motherNode.setLayoutY(parentY);
-
-        pane.getChildren().addAll(fatherNode, motherNode);
-
-        Line partnerLine = createLine(fatherNode.getRightAnchor(), motherNode.getLeftAnchor());
-        pane.getChildren().add(partnerLine);
-
-        double midX = (fatherNode.getRightAnchor().getX() + motherNode.getLeftAnchor().getX()) / 2;
-        double forkY = rootY - 30;
-        Line downLine = new Line(midX, partnerLine.getStartY(), midX, forkY);
-        pane.getChildren().add(downLine);
-
-        buildSiblingsTree(pane, rootNode, father, mother, midX, forkY, rootY);
-    }
-
-    private void buildSingleParentTree(Pane pane, PersonNode rootNode, Person soleParent) {
-        PersonNode parentNode = new PersonNode(soleParent);
-
-        double rootX = rootNode.getLayoutX();
-        double rootY = rootNode.getLayoutY();
-
-        double parentX = rootX;
-        double parentY = rootY - 150;
-
-        parentNode.setLayoutX(parentX);
-        parentNode.setLayoutY(parentY);
-        pane.getChildren().add(parentNode);
-
-        Line line = createLine(parentNode.getBottomAnchor(), rootNode.getTopAnchor());
-        pane.getChildren().add(line);
-    }
-
-    private void buildSiblingsTree(Pane pane, PersonNode rootNode, Person father, Person mother, double midX, double forkY, double rootY) {
-        List<Person> siblings = father.getSharedDescendantsWith(mother)
-                .stream()
-                .filter(p -> !p.equals(root))
-                .toList();
-
-        if (!siblings.isEmpty()) {
-            List<Person> all = new ArrayList<>(siblings);
-            all.add(root);
-            all.sort(Comparator.comparing(Person::getBirthDate));
-
-            int rootIndex = all.indexOf(root);
-            double siblingSpacing = 160;
-            double totalWidth = (all.size() - 1) * siblingSpacing;
-            double siblingStartX = midX - totalWidth / 2;
-
-            for (int i = 0; i < all.size(); i++) {
-                Person person = all.get(i);
-                if (person.equals(root)) continue;
-
-                PersonNode siblingNode = new PersonNode(person);
-                double x = siblingStartX + i * siblingSpacing - PersonNode.WIDTH / 2;
-                siblingNode.setLayoutX(x);
-                siblingNode.setLayoutY(rootY);
-                pane.getChildren().add(siblingNode);
-
-                Line line = createLine(new Point2D(midX, forkY), siblingNode.getTopAnchor());
-                pane.getChildren().add(line);
-            }
-
-            double newRootX = siblingStartX + rootIndex * siblingSpacing - PersonNode.WIDTH / 2;
-            rootNode.setLayoutX(newRootX);
+            parentNode.setLayoutX(childX);
+            parentNode.setLayoutY(parentY);
+            pane.getChildren().add(parentNode);
+            return;
         }
 
-        Line rootLine = createLine(new Point2D(midX, forkY), rootNode.getTopAnchor());
-        pane.getChildren().add(rootLine);
+        Person parent1 = parents.get(0);
+        Person parent2 = parents.get(1);
+
+        PersonNode parentNode1 = new PersonNode(parent1);
+        PersonNode parentNode2 = new PersonNode(parent2);
+
+        double childX = childNode.getLayoutX();
+        double childY = childNode.getLayoutY();
+        double parentY = childY - PARTNER_SPACING;
+
+        double centerX = childX + PersonNode.WIDTH / 2;
+        double startX = centerX - PARTNER_SPACING;
+
+        parentNode1.setLayoutX(startX);
+        parentNode1.setLayoutY(parentY);
+        parentNode2.setLayoutX(startX + PARTNER_SPACING);
+        parentNode2.setLayoutY(parentY);
+
+        pane.getChildren().addAll(parentNode1, parentNode2);
+
+        Marriage marriage = parent1.getMarriageWith(parent2);
+        boolean hasCommonChild = parent1.getSharedDescendantsWith(parent2).contains(root);
+
+        if (marriage != null || hasCommonChild) {
+            Line coupleLine = new Line(parentNode1.getRightAnchor().getX(), parentNode1.getRightAnchor().getY(), parentNode2.getLeftAnchor().getX(), parentNode2.getLeftAnchor().getY());
+            pane.getChildren().add(coupleLine);
+
+            double midX = (parentNode1.getRightAnchor().getX() + parentNode2.getLeftAnchor().getX()) / 2;
+            double forkY = childY - 30;
+
+            Line downLine = new Line(midX, coupleLine.getStartY(), midX, forkY);
+            pane.getChildren().add(downLine);
+
+            Label marriageLabel = createMarriageLabel(marriage);
+            Label divorceLabel = createDivorceLabel(marriage);
+
+            if (marriageLabel != null) {
+                pane.getChildren().add(marriageLabel);
+                positionLabel(marriageLabel, MARRIAGE_LABEL_OFFSET_MULT, parentNode1, parentNode2);
+            }
+
+            if (divorceLabel != null) {
+                pane.getChildren().add(divorceLabel);
+                positionLabel(divorceLabel, DIVORCE_LABEL_OFFSET_MULT, parentNode1, parentNode2);
+            }
+
+            List<Person> siblings = parent1.getSharedDescendantsWith(parent2);
+            buildSharedDescendantsFork(pane, midX, forkY, childY, siblings, childNode);
+        }
     }
 
     private void buildPartnerTree(Pane pane, PersonNode rootNode) {
         List<Person> partners = root.getPartners();
-        double baseSpacing = 200;
+        double baseSpacing = PARTNER_SPACING;
         double rootCenterX = rootNode.getLayoutX() + PersonNode.WIDTH / 2;
         double currentX = rootCenterX;
 
         for (int i = 0; i < partners.size(); i++) {
             Person partner = partners.get(i);
-            double spacing = baseSpacing;
 
-            final Label[] marriageLabel = {null};
+            // Create marriage and divorce labels first to calculate space needed
             var marriage = partner.getMarriageWith(root);
+            Label marriageLabel = createMarriageLabel(marriage);
+            Label divorceLabel = createDivorceLabel(marriage);
 
-            if (marriage != null && marriage.getStartDate() != null) {
-                String dateStr = marriage.getStartDate().format(GenealogyApp.dateFormatter);
-                String locationStr = "";
-
-                if (marriage.getStartArea() != null && marriage.getStartCountry() != null) {
-                    locationStr = " " + marriage.getStartArea() + ", " + marriage.getStartCountry();
-                }
-
-                marriageLabel[0] = new Label("♥ " + dateStr + locationStr);
-                marriageLabel[0].getStyleClass().add("marriage-label");
+            // Calculate needed spacing (more space if we have labels)
+            double spacingNeeded = baseSpacing;
+            if (marriageLabel != null || divorceLabel != null) {
+                spacingNeeded += 60; // Add extra space for labels
             }
 
-            currentX += (i * spacing) + PersonNode.WIDTH + (marriageLabel == null ? 0 : 0); // offset jen pokud chceš větší mezeru
+            currentX += spacingNeeded;
 
+            // Create partner node with calculated position
             var partnerNode = new PersonNode(partner);
             partnerNode.setLayoutX(currentX);
-            partnerNode.setLayoutY(rootNode.getLayoutY()); // ve stejné výšce jako root
+            partnerNode.setLayoutY(rootNode.getLayoutY());
             pane.getChildren().add(partnerNode);
 
-            Line coupleLine = createLine(rootNode.getRightAnchor(), partnerNode.getLeftAnchor());
+            // Draw connection with proper styling
+            Line coupleLine = new Line(
+                rootNode.getRightAnchor().getX(),
+                rootNode.getRightAnchor().getY(),
+                partnerNode.getLeftAnchor().getX(),
+                partnerNode.getLeftAnchor().getY()
+            );
+            coupleLine.getStyleClass().add("relation-line");
             pane.getChildren().add(coupleLine);
 
+            // Position labels ON the line instead of above it
             if (marriageLabel != null) {
-                pane.getChildren().add(marriageLabel[0]);
+                pane.getChildren().add(marriageLabel);
+                marriageLabel.getStyleClass().add("on-line-label");
 
                 Platform.runLater(() -> {
-                    double rootRight = rootNode.getRightAnchor().getX();
-                    double partnerLeft = partnerNode.getLeftAnchor().getX();
-                    double centerX = (rootRight + partnerLeft) / 2;
-
-                    double labelWidth = marriageLabel[0].getWidth();
-                    double labelHeight = marriageLabel[0].getHeight();
-
-                    marriageLabel[0].setLayoutX(centerX - labelWidth / 2);
-                    marriageLabel[0].setLayoutY(rootNode.getLayoutY() - labelHeight); // nad partnery
+                    double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
+                    marriageLabel.setLayoutX(midX - marriageLabel.getWidth() / 2);
+                    // Position directly on the line
+                    marriageLabel.setLayoutY(rootNode.getRightAnchor().getY() - marriageLabel.getHeight() / 2);
                 });
             }
 
-            // Build children tree
+            if (divorceLabel != null) {
+                pane.getChildren().add(divorceLabel);
+                divorceLabel.getStyleClass().add("on-line-label");
+
+                Platform.runLater(() -> {
+                    double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
+                    // Offset the divorce label to avoid overlap with marriage label
+                    divorceLabel.setLayoutX(midX + 20);
+                    // Position directly on the line
+                    divorceLabel.setLayoutY(rootNode.getRightAnchor().getY() - divorceLabel.getHeight() / 2);
+                });
+            }
+
             buildDescendantsTree(pane, rootNode, partnerNode, root.getSharedDescendantsWith(partner));
         }
     }
 
-
     private void buildDescendantsTree(Pane pane, PersonNode rootNode, PersonNode partnerNode, List<Person> descendants) {
-        if (!descendants.isEmpty()) {
-            double childY = 300;
-            double childSpacing = 160;
+        if (descendants.isEmpty()) return;
 
-            Platform.runLater(() -> {
-                Point2D rootAnchor = rootNode.getRightAnchor();
-                Point2D partnerAnchor = partnerNode.getLeftAnchor();
-                double midX = (rootAnchor.getX() + partnerAnchor.getX()) / 2;
-                double midY = rootAnchor.getY();
-                double connectionY = midY + 50;
+        // Calculate midpoint between partners
+        double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
+        double parentY = rootNode.getLayoutY() + PersonNode.HEIGHT;
+        double childY = parentY + CHILD_SPACING;
 
-                // svislá čára mezi partnery a potomky
-                Line verticalLine = new Line(midX, midY, midX, connectionY);
-                pane.getChildren().add(verticalLine);
+        // Connection point from parent line
+        double horizontalLineY = childY - 30;
 
-                double totalWidth = (descendants.size() - 1) * childSpacing;
-                double startX = midX - totalWidth / 2;
+        // Draw vertical line down from parent midpoint to the horizontal line
+        Line verticalLine = new Line(midX, parentY, midX, horizontalLineY);
+        verticalLine.getStyleClass().add("relation-line");
+        pane.getChildren().add(verticalLine);
 
-                // vodorovná čára mezi dětmi
-                if (descendants.size() > 1) {
-                    double leftX = startX;
-                    double rightX = startX + (descendants.size() - 1) * childSpacing;
-                    Line horizontalLine = new Line(leftX, connectionY, rightX, connectionY);
-                    pane.getChildren().add(horizontalLine);
-                }
+        // Calculate improved spacing for children
+        double childTotalWidth = descendants.size() * PersonNode.WIDTH +
+                              (descendants.size() - 1) * (CHILD_SPACING - PersonNode.WIDTH);
+        double startX = midX - childTotalWidth / 2;
 
-                for (int i = 0; i < descendants.size(); i++) {
-                    Person child = descendants.get(i);
-                    PersonNode childNode = new PersonNode(child);
+        // Draw horizontal connection line above children
+        if (descendants.size() > 0) {
+            double leftMostX = startX + PersonNode.WIDTH/2;
+            double rightMostX = startX + (descendants.size() - 1) * CHILD_SPACING + PersonNode.WIDTH/2;
 
-                    double x = startX + i * childSpacing - PersonNode.WIDTH / 2;
-                    childNode.setLayoutX(x);
-                    childNode.setLayoutY(childY);
-                    pane.getChildren().add(childNode);
+            Line horizontalLine = new Line(leftMostX, horizontalLineY, rightMostX, horizontalLineY);
+            horizontalLine.getStyleClass().add("relation-line");
+            pane.getChildren().add(horizontalLine);
+        }
 
-                    double childCenterX = x + PersonNode.WIDTH / 2;
-                    Line connector = new Line(childCenterX, connectionY, childCenterX, childY);
-                    pane.getChildren().add(connector);
-                }
-            });
+        // Position all children with proper spacing and vertical connections
+        for (int i = 0; i < descendants.size(); i++) {
+            Person child = descendants.get(i);
+            PersonNode childNode = new PersonNode(child);
+
+            double x = startX + i * CHILD_SPACING;
+            childNode.setLayoutX(x);
+            childNode.setLayoutY(childY);
+            pane.getChildren().add(childNode);
+
+            // Draw vertical connection from horizontal line to child
+            double childCenterX = x + PersonNode.WIDTH / 2;
+            Line childLine = new Line(childCenterX, horizontalLineY, childCenterX, childY);
+            childLine.getStyleClass().add("relation-line");
+            pane.getChildren().add(childLine);
         }
     }
 
+    private Label createMarriageLabel(Marriage marriage) {
+        if (marriage == null || marriage.getStartDate() == null) return null;
+
+        String dateStr = marriage.getStartDate().format(GenealogyApp.dateFormatter);
+        String locationStr = (marriage.getStartArea() != null && marriage.getStartCountry() != null)
+                ? " " + marriage.getStartArea() + ", " + marriage.getStartCountry()
+                : "";
+
+        Label label = new Label("♥ " + dateStr + locationStr);
+        label.getStyleClass().add("marriage-label");
+        return label;
+    }
+
+    private Label createDivorceLabel(Marriage marriage) {
+        if (marriage == null || marriage.getEndDate() == null) return null;
+
+        String dateStr = marriage.getEndDate().format(GenealogyApp.dateFormatter);
+        String locationStr = (marriage.getEndArea() != null && marriage.getEndCountry() != null)
+                ? " " + marriage.getEndArea() + ", " + marriage.getEndCountry()
+                : "";
+
+        Label label = new Label("✗ " + dateStr + locationStr);
+        label.getStyleClass().add("divorce-label");
+        return label;
+    }
+
+    private void positionLabel(Label label, double verticalMultiplier, PersonNode rootNode, PersonNode partnerNode) {
+        Platform.runLater(() -> {
+            double rootRight = rootNode.getRightAnchor().getX();
+            double partnerLeft = partnerNode.getLeftAnchor().getX();
+            double centerX = (rootRight + partnerLeft) / 2;
+
+            double labelWidth = label.getWidth();
+            double labelHeight = label.getHeight();
+
+            label.setLayoutX(centerX - labelWidth / 2);
+            label.setLayoutY(rootNode.getLayoutY() + verticalMultiplier * labelHeight);
+        });
+    }
+
+    private void buildSharedDescendantsFork(Pane pane, double midX, double forkY, double nodeY, List<Person> people, PersonNode referenceNode) {
+        if (people.isEmpty()) return;
+
+        List<Person> sorted = new ArrayList<>(people);
+        sorted.sort(Comparator.comparing(Person::getBirthDate));
+
+        // Find the reference person in the sorted list
+        int rootIndex = -1;
+        for (int i = 0; i < sorted.size(); i++) {
+            if (sorted.get(i).equals(root)) {
+                rootIndex = i;
+                break;
+            }
+        }
+
+        double totalWidth = (sorted.size() - 1) * SIBLING_SPACING;
+        double startX = midX - totalWidth / 2;
+
+        // Only draw the horizontal line if there are multiple siblings
+        if (sorted.size() > 1) {
+            Line horizontal = new Line(startX, forkY, startX + totalWidth, forkY);
+            horizontal.getStyleClass().add("relation-line");
+            pane.getChildren().add(horizontal);
+        }
+
+        // Draw vertical lines and nodes for all siblings EXCEPT root
+        for (int i = 0; i < sorted.size(); i++) {
+            Person p = sorted.get(i);
+            // Skip the root person (John) - we already have a node for him
+            if (p.equals(root)) continue;
+
+            PersonNode node = new PersonNode(p);
+            double x = startX + i * SIBLING_SPACING - PersonNode.WIDTH / 2;
+            node.setLayoutX(x);
+            node.setLayoutY(nodeY);
+            pane.getChildren().add(node);
+
+            double centerX = x + PersonNode.WIDTH / 2;
+            Line down = new Line(centerX, forkY, centerX, nodeY);
+            down.getStyleClass().add("relation-line");
+            pane.getChildren().add(down);
+        }
+
+        // Position the reference node (John) correctly
+        if (referenceNode != null && rootIndex >= 0) {
+            double rootX = startX + rootIndex * SIBLING_SPACING - PersonNode.WIDTH / 2;
+            referenceNode.setLayoutX(rootX);
+
+            // Draw a single direct line from fork to reference's top anchor
+            Line lineToRef = new Line(midX, forkY, referenceNode.getTopAnchor().getX(), referenceNode.getTopAnchor().getY());
+            lineToRef.getStyleClass().add("relation-line");
+            pane.getChildren().add(lineToRef);
+        }
+    }
 
     private void adjustPaneLayout(Pane pane) {
         Platform.runLater(() -> {
@@ -244,13 +336,11 @@ public class TreeBuilder {
                     minY = Math.min(minY, p.getLayoutY());
                     maxY = Math.max(maxY, p.getLayoutY() + PersonNode.HEIGHT);
                 } else if (node instanceof Label label) {
-                    // Adjust for marriage labels
                     minX = Math.min(minX, label.getLayoutX());
                     maxX = Math.max(maxX, label.getLayoutX() + label.getWidth());
                     minY = Math.min(minY, label.getLayoutY());
                     maxY = Math.max(maxY, label.getLayoutY() + label.getHeight());
                 } else if (node instanceof Line l) {
-                    // Adjust for lines
                     minX = Math.min(minX, Math.min(l.getStartX(), l.getEndX()));
                     maxX = Math.max(maxX, Math.max(l.getStartX(), l.getEndX()));
                     minY = Math.min(minY, Math.min(l.getStartY(), l.getEndY()));
@@ -261,9 +351,8 @@ public class TreeBuilder {
             double contentWidth = maxX - minX;
             double contentHeight = maxY - minY;
 
-            // Centering and offsetting
-            double offsetX = 100 - minX;
-            double offsetY = 100 - minY;
+            double offsetX = PANE_PADDING - minX;
+            double offsetY = PANE_PADDING - minY;
 
             for (var node : pane.getChildren()) {
                 if (node instanceof PersonNode p) {
@@ -284,10 +373,4 @@ public class TreeBuilder {
         });
     }
 
-
-    private Line createLine(Point2D start, Point2D end) {
-        Line line = new Line(start.getX(), start.getY(), end.getX(), end.getY());
-        line.getStyleClass().add("relation-line"); // Add a CSS class for styling
-        return line;
-    }
 }
