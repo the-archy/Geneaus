@@ -7,11 +7,16 @@ import javafx.stage.Stage;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GenealogyApp extends javafx.application.Application {
 
 
     protected static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+
+    private List<Person> people = new ArrayList<>();
 
 
     @Override
@@ -81,6 +86,14 @@ public class GenealogyApp extends javafx.application.Application {
         mum.addChild(bro);
         dad.addChild(bro);
 
+        people.add(person1);
+        people.add(spouse);
+        people.add(child1);
+        people.add(child2);
+        people.add(child3);
+        people.add(mum);
+        people.add(dad);
+        people.add(bro);
 
 
         Pane tree = new TreeBuilder(person1).build();
@@ -89,7 +102,7 @@ public class GenealogyApp extends javafx.application.Application {
 
         Scene scene = new Scene(scrollPane, 1000, 700);
 
-
+        FamilyTreeRW.saveFamilyTree(people, "family_tree.xml");
 
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 

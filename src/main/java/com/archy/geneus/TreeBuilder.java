@@ -45,6 +45,7 @@ public class TreeBuilder {
     }
 
     private void buildParentalTree(Pane pane, PersonNode childNode, List<Person> parents) {
+
         if (parents.size() == 1) {
             Person soleParent = parents.get(0);
             PersonNode parentNode = new PersonNode(soleParent);
@@ -159,7 +160,6 @@ public class TreeBuilder {
                 pane.getChildren().add(marriageLabel);
                 marriageLabel.getStyleClass().add("on-line-label");
 
-                // position the marriage label above the line
                 Platform.runLater(() -> {
                     double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
                     double lineY = rootNode.getRightAnchor().getY();
