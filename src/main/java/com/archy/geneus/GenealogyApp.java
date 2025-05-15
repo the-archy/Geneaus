@@ -102,7 +102,12 @@ public class GenealogyApp extends javafx.application.Application {
 
         Scene scene = new Scene(scrollPane, 1000, 700);
 
-        FamilyTreeRW.saveFamilyTree(people, "family_tree.xml");
+        try {
+            FamilyTreeRW.saveFamilyTree(people, "family_tree.xml");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
 

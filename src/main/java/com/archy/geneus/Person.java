@@ -18,6 +18,7 @@ public class Person implements Comparable<Person> {
     private String displayName;
 
     private LocalDate birthDate;
+    private LocalDate deathDate;
 
     private Person parent1, parent2;
 
@@ -45,6 +46,9 @@ public class Person implements Comparable<Person> {
         if (child.parent1 == null) child.parent1 = this;
         else if (child.parent2 == null) child.parent2 = this;
     }
+
+    public void setDeathDate(LocalDate dd) { this.deathDate = dd; }
+    public LocalDate getDeathDate() { return deathDate; }
 
     public List<Person> getDescendants() { return Collections.unmodifiableList(descendants); }
 
@@ -85,5 +89,24 @@ public class Person implements Comparable<Person> {
                 (Objects.equals(child.getParent1(), this) && Objects.equals(child.getParent2(), partner)) ||
                 (Objects.equals(child.getParent2(), this) && Objects.equals(child.getParent1(), partner))
             ).toList();
+    }
+
+
+    @Override
+    public String toString() {
+        return "Person{" +
+            "id='" + id + '\'' +
+            ", displayName='" + displayName + '\'' +
+            ", birthDate=" + birthDate +
+            ", deathDate=" + deathDate +
+            ", parent1=" + (parent1 != null ? parent1.getDisplayName() + " (ID: " + parent1.getId() + ")" : null) +
+            ", parent2=" + (parent2 != null ? parent2.getDisplayName() + " (ID: " + parent2.getId() + ")" : null) +
+            ", marriages=" + marriages.stream()
+            .map(m -> m.getSpouse().getDisplayName() + " (ID: " + m.getSpouse().getId() + ")")
+            .collect(Collectors.joining(", ", "[", "]")) +
+            ", descendants=" + descendants.stream()
+            .map(d -> d.getDisplayName() + " (ID: " + d.getId() + ")")
+            .collect(Collectors.joining(", ", "[", "]")) +
+            '}';
     }
 }

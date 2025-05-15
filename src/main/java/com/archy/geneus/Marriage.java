@@ -74,4 +74,17 @@ public class Marriage {
     public void setEndCountry(String endCountry) {
         this.endCountry = endCountry;
     }
+
+    @Override
+    public String toString() {
+        return "Marriage{" +
+               "spouse=(" + spouse.getDisplayName() + ", " + spouse.getId() + ")" +
+               ", startDate=" + startDate +
+               ", startArea='" + startArea + '\'' +
+               ", startCountry='" + startCountry + '\'' +
+               ", endDate=" + endDate +
+               ", endArea='" + endArea + '\'' +
+               ", endCountry='" + endCountry + '\'' +
+               '}';
+    }
 }
