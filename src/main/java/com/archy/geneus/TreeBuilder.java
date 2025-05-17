@@ -1,11 +1,12 @@
 package com.archy.geneus;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
@@ -113,19 +114,20 @@ public class TreeBuilder {
             if (marriageLabel != null) {
                 marriageLabel.getStyleClass().add("marriage-label");
                 pane.getChildren().add(marriageLabel);
-                pane.getChildren().add(marriageLabel);
+                Platform.runLater(() -> {
+                    // 1) znovu načti skutečné souřadnice linky
+                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
+                    double realLineY = coupleLine.getStartY();
 
-                marriageLabel.layoutXProperty().bind(
-                    Bindings.createDoubleBinding(
-                        () -> (coupleLine.getStartX()+coupleLine.getEndX())/2 - marriageLabel.getWidth()/2,
-                        coupleLine.startXProperty(), coupleLine.endXProperty(), marriageLabel.widthProperty()
-                    )
-                );
-                marriageLabel.layoutYProperty().bind(
-                    coupleLine.startYProperty()
-                        .subtract(marriageLabel.heightProperty())
-                        .subtract(MARRIAGE_LABEL_OFFSET_Y)
-                );
+                    marriageLabel.applyCss();
+                    marriageLabel.layout();
+                    double w = marriageLabel.getWidth();
+                    double h = marriageLabel.getHeight();
+
+                    // 2) centrování + odsazení
+                    marriageLabel.setLayoutX(realMidX - w / 2);
+                    marriageLabel.setLayoutY(realLineY - h - MARRIAGE_LABEL_OFFSET_Y);
+                });
 
             }
 
@@ -133,18 +135,16 @@ public class TreeBuilder {
             if (divorceLabel != null) {
                 divorceLabel.getStyleClass().add("divorce-label");
                 pane.getChildren().add(divorceLabel);
+                Platform.runLater(() -> {
+                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
+                    double realLineY = coupleLine.getStartY();
 
-                divorceLabel.layoutXProperty().bind(
-                    Bindings.createDoubleBinding(
-                        () -> (coupleLine.getStartX()+coupleLine.getEndX())/2 - divorceLabel.getWidth()/2,
-                        coupleLine.startXProperty(), coupleLine.endXProperty(), divorceLabel.widthProperty()
-                    )
-                );
-                divorceLabel.layoutYProperty().bind(
-                    coupleLine.startYProperty()
-                        .add(DIVORCE_LABEL_OFFSET_Y)
-                );
+                    divorceLabel.applyCss();
+                    divorceLabel.layout();
 
+                    divorceLabel.setLayoutX(realMidX - divorceLabel.getWidth() / 2);
+                    divorceLabel.setLayoutY(realLineY + DIVORCE_LABEL_OFFSET_Y);
+                });
 
             }
 
@@ -193,34 +193,36 @@ public class TreeBuilder {
 
             if (marriageLabel != null) {
                 pane.getChildren().add(marriageLabel);
+                Platform.runLater(() -> {
+                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
+                    double realLineY = coupleLine.getStartY();
 
-                marriageLabel.layoutXProperty().bind(
-                    Bindings.createDoubleBinding(
-                        () -> (coupleLine.getStartX()+coupleLine.getEndX())/2 - marriageLabel.getWidth()/2,
-                        coupleLine.startXProperty(), coupleLine.endXProperty(), marriageLabel.widthProperty()
-                    )
-                );
-                marriageLabel.layoutYProperty().bind(
-                    coupleLine.startYProperty()
-                        .subtract(marriageLabel.heightProperty())
-                        .subtract(MARRIAGE_LABEL_OFFSET_Y)
-                );
+                    marriageLabel.applyCss();
+                    marriageLabel.layout();
 
+                    marriageLabel.setLayoutX(realMidX - marriageLabel.getWidth() / 2);
+                    marriageLabel.setLayoutY(realLineY - marriageLabel.getHeight() - MARRIAGE_LABEL_OFFSET_Y);
+
+
+                    System.out.println("Marriage label: " + marriageLabel.getLayoutX() + ", " + marriageLabel.getLayoutY());
+                });
             }
 
             if (divorceLabel != null) {
                 pane.getChildren().add(divorceLabel);
+                Platform.runLater(() -> {
+                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
+                    double realLineY = coupleLine.getStartY();
 
-                divorceLabel.layoutXProperty().bind(
-                    Bindings.createDoubleBinding(
-                        () -> (coupleLine.getStartX()+coupleLine.getEndX())/2 - divorceLabel.getWidth()/2,
-                        coupleLine.startXProperty(), coupleLine.endXProperty(), divorceLabel.widthProperty()
-                    )
-                );
-                divorceLabel.layoutYProperty().bind(
-                    coupleLine.startYProperty()
-                        .add(DIVORCE_LABEL_OFFSET_Y)
-                );
+                    divorceLabel.applyCss();
+                    divorceLabel.layout();
+
+                    divorceLabel.setLayoutX(realMidX - divorceLabel.getWidth() / 2);
+                    divorceLabel.setLayoutY(realLineY + DIVORCE_LABEL_OFFSET_Y);
+                    System.out.println("Divorce label: " + divorceLabel.getLayoutX() + ", " + divorceLabel.getLayoutY());
+                });
+
+
             }
 
             buildDescendantsTree(pane, rootNode, partnerNode, root.getSharedDescendantsWith(partner));
@@ -394,7 +396,7 @@ public class TreeBuilder {
                 }
             }
 
-            pane.setPrefSize(contentWidth + INITIAL_X, contentHeight + INITIAL_Y);
+            pane.setPrefSize(contentWidth + 200, contentHeight + 200);
 
         });
     }

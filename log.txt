@@ -1,4 +1,6 @@
-[2025-05-17 16:27:39.724171105 ] Loaded PeopleWindow.fxml
-[2025-05-17 16:27:39.882694551 ] Loaded family tree from file 'family_tree.xml'
-[2025-05-17 16:27:40.030095581 ] Loaded scene
-[2025-05-17 16:27:40.379086166 ] Stage shown
+[2025-05-17 16:30:05.123432844 ] Loaded PeopleWindow.fxml
+[2025-05-17 16:30:05.282750347 ] Loaded family tree from file 'family_tree.xml'
+[2025-05-17 16:30:05.431115325 ] Loaded scene
+[2025-05-17 16:30:05.772538306 ] Stage shown
+[2025-05-17 16:30:07.156791578 ] Selected person: Jane Doe
+[2025-05-17 16:30:07.674288728 ] Selected person: John Doe
