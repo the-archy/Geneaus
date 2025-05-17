@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="unqualified"
+           attributeFormDefault="unqualified">
+
+  <!-- Kořenový element -->
+  <xs:element name="family_tree" type="familyTreeType"/>
+
+  <!-- Struktura rodokmenu -->
+  <xs:complexType name="familyTreeType">
+    <xs:sequence>
+      <xs:element name="persons"   type="personsType"/>
+      <xs:element name="marriages" type="marriagesType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Seznam osob -->
+  <xs:complexType name="personsType">
+    <xs:sequence>
+      <xs:element name="person" type="personType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Definice osoby -->
+  <xs:complexType name="personType">
+    <xs:sequence>
+      <xs:element name="child" type="childType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id"        type="xs:ID"    use="required"/>
+    <xs:attribute name="name"      type="xs:string" use="required"/>
+    <xs:attribute name="birthDate" type="xs:date"  use="required"/>
+    <xs:attribute name="parent1"   type="xs:IDREF" use="optional"/>
+    <xs:attribute name="parent2"   type="xs:IDREF" use="optional"/>
+  </xs:complexType>
+
+  <!-- Definice potomka -->
+  <xs:complexType name="childType">
+    <xs:attribute name="id" type="xs:IDREF" use="required"/>
+  </xs:complexType>
+
+  <!-- Seznam manželství -->
+  <xs:complexType name="marriagesType">
+    <xs:sequence>
+      <xs:element name="marriage" type="marriageType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Definice manželství -->
+  <xs:complexType name="marriageType">
+    <xs:attribute name="spouse1"     type="xs:IDREF" use="required"/>
+    <xs:attribute name="spouse2"     type="xs:IDREF" use="required"/>
+    <xs:attribute name="startDate"   type="xs:date"  use="required"/>
+    <xs:attribute name="startArea"   type="xs:string" use="optional"/>
+    <xs:attribute name="startCountry" type="xs:string" use="optional"/>
+    <xs:attribute name="endDate"     type="xs:date"  use="optional"/>
+    <xs:attribute name="endArea"     type="xs:string" use="optional"/>
+    <xs:attribute name="endCountry"  type="xs:string" use="optional"/>
+  </xs:complexType>
+
+</xs:schema>

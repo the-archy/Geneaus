@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<familyTree>
+    <persons>
+        <person birthDate="1980-01-01" id="1" name="John Doe" parent1="6" parent2="7">
+            <child id="3"/>
+            <child id="4"/>
+            <child id="5"/>
+        </person>
+        <person birthDate="1985-05-15" id="2" name="Jane Doe">
+            <child id="3"/>
+            <child id="4"/>
+            <child id="5"/>
+        </person>
+        <person birthDate="2005-03-10" id="3" name="Alice Doe" parent1="1" parent2="2"/>
+        <person birthDate="2008-07-20" id="4" name="Bob Doe" parent1="1" parent2="2"/>
+        <person birthDate="2010-11-30" id="5" name="Charlie Doe" parent1="1" parent2="2"/>
+        <person birthDate="1950-02-02" id="6" name="Mary Doe">
+            <child id="1"/>
+            <child id="8"/>
+        </person>
+        <person birthDate="1948-03-03" id="7" name="Robert Doe">
+            <child id="1"/>
+            <child id="8"/>
+        </person>
+        <person birthDate="1975-04-04" id="8" name="David Doe" parent1="6" parent2="7"/>
+    </persons>
+    <marriages>
+        <marriage endArea="Los Angeles" endCountry="USA" endDate="2010-06-20" spouse1="1" spouse2="2" startArea="New York" startCountry="USA" startDate="2000-06-20"/>
+    </marriages>
+</familyTree>

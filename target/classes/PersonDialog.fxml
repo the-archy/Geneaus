@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.archy.geneus.PersonDialogController">
+    <content>
+        <VBox spacing="10">
+            <Label text="Name:"/>
+            <TextField fx:id="nameField"/>
+            <Label text="Birth Date:"/>
+            <DatePicker fx:id="birthDatePicker"/>
+            <Label text="Death Date:"/>
+            <DatePicker fx:id="deathDatePicker"/>
+            <Label text="Parent 1:"/>
+            <ComboBox fx:id="parent1Combo"/>
+            <Label text="Parent 2:"/>
+            <ComboBox fx:id="parent2Combo"/>
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType text="OK" buttonData="OK_DONE"/>
+        <ButtonType text="Cancel" buttonData="CANCEL_CLOSE"/>
+    </buttonTypes>
+</DialogPane>
