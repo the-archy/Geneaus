@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="com.archy.geneus.PeopleWindowController" spacing="6">
+    <HBox>
+        <MenuBar HBox.hgrow="ALWAYS">
+            <menus>
+                <Menu text="File">
+                    <MenuItem fx:id="loadMenuItem" text="Load..."/>
+                    <MenuItem fx:id="saveMenuItem" text="Save"/>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <Button text="Exit" onAction="#onExit"/>
+    </HBox>
+    <SplitPane dividerPositions="0.36">
+        <!-- Left: Controls + Table -->
+        <VBox spacing="4" prefWidth="350">
+            <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 4;">
+                <Button text="Add" onAction="#onAdd"/>
+                <Button text="Edit" onAction="#onEdit"/>
+                <Button text="Delete" onAction="#onDelete"/>
+            </HBox>
+            <TableView fx:id="peopleTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idCol" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="nameCol" text="Name" prefWidth="120"/>
+                    <TableColumn fx:id="birthCol" text="Birth" prefWidth="90"/>
+                    <TableColumn fx:id="deathCol" text="Death" prefWidth="90"/>
+                    <TableColumn fx:id="parent1Col" text="Parent 1" prefWidth="120"/>
+                    <TableColumn fx:id="parent2Col" text="Parent 2" prefWidth="120"/>
+                </columns>
+            </TableView>
+        </VBox>
+        <!-- Right: Tree ScrollPane -->
+        <ScrollPane fx:id="treeScroll" fitToWidth="false" fitToHeight="false" prefWidth="900" prefHeight="700"/>
+    </SplitPane>
+</VBox>

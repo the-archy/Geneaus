@@ -11,20 +11,12 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 
 public final class FamilyTreeRW {
-
-
-    public static Person getPersonById(List<Person> people, String id) {
-        for (Person person : people)
-            if (person.getId().equals(id))
-                return person;
-
-        return null;
-    }
 
     public static List<Person> loadFamilyTree(String filePath) throws Exception {
 
@@ -63,13 +55,13 @@ public final class FamilyTreeRW {
             var spouse1Id = marriageEl.getAttribute("spouse1");
             var spouse2Id = marriageEl.getAttribute("spouse2");
 
-            var spouse1 = getPersonById(people, spouse1Id);
-            var spouse2 = getPersonById(people, spouse2Id);
+            var spouse1 = Person.getPersonByID(people, spouse1Id);
+            var spouse2 = Person.getPersonByID(people, spouse2Id);
 
             if (spouse1 != null && spouse2 != null) {
 
-                var marriage1 = new Marriage(spouse1);
-                var marriage2 = new Marriage(spouse2);
+                var marriage1 = new Marriage(spouse2);
+                var marriage2 = new Marriage(spouse1);
 
                 marriage1.setStartDate(LocalDate.parse(marriageEl.getAttribute("startDate")));
                 marriage2.setStartDate(LocalDate.parse(marriageEl.getAttribute("startDate")));
@@ -94,7 +86,7 @@ public final class FamilyTreeRW {
 
             var personEl = (Element) persons.item(i);
             var id = personEl.getAttribute("id");
-            var person = getPersonById(people, id);
+            var person = Person.getPersonByID(people, id);
 
             if (person != null) {
 
@@ -105,7 +97,7 @@ public final class FamilyTreeRW {
                     var childEl = (Element) children.item(j);
 
                     String childId = childEl.getAttribute("id");
-                    Person child = getPersonById(people, childId);
+                    var child = Person.getPersonByID(people, childId);
 
                     if (child != null)
                         person.addChild(child);
@@ -126,9 +118,6 @@ public final class FamilyTreeRW {
         return people;
     }
 
-
-
-
     public static void saveFamilyTree(List<Person> people, String filePath) throws Exception {
 
         var dbf = DocumentBuilderFactory.newInstance();
@@ -144,8 +133,7 @@ public final class FamilyTreeRW {
         List<Element> marriageElements = new ArrayList<>();
         Set<String> seenMarriages = new HashSet<>();
 
-        // Build <person> entries
-        for (Person person : people) {
+        for (var person : people) {
             var personEl = doc.createElement("person");
             personEl.setAttribute("id", person.getId());
 
@@ -170,7 +158,7 @@ public final class FamilyTreeRW {
                 personEl.setAttribute("parent2", person.getParent2().getId());
             }
 
-            for (Person child : person.getDescendants()) {
+            for (var child : new LinkedHashSet<>(person.getDescendants())) {
                 Element childEl = doc.createElement("child");
                 childEl.setAttribute("id", child.getId());
                 personEl.appendChild(childEl);
@@ -178,34 +166,36 @@ public final class FamilyTreeRW {
 
             personsWrap.appendChild(personEl);
 
-            for (Marriage m : person.getMarriages()) {
+            for (var m : person.getMarriages()) {
 
                 String id1 = person.getId();
                 String id2 = m.getSpouse().getId();
                 String key = id1.compareTo(id2) < 0 ? id1 + '-' + id2 : id2 + '-' + id1;
 
                 if (!seenMarriages.contains(key)) {
-                    Element marriageEl = doc.createElement("marriage");
+
+                    var marriageEl = doc.createElement("marriage");
                     marriageEl.setAttribute("spouse1", id1);
                     marriageEl.setAttribute("spouse2", id2);
-                    if (m.getStartDate() != null) {
+
+                    if (m.getStartDate() != null)
                         marriageEl.setAttribute("startDate", m.getStartDate().toString());
-                    }
-                    if (m.getStartArea() != null) {
+
+                    if (m.getStartArea() != null)
                         marriageEl.setAttribute("startArea", m.getStartArea());
-                    }
-                    if (m.getStartCountry() != null) {
+
+                    if (m.getStartCountry() != null)
                         marriageEl.setAttribute("startCountry", m.getStartCountry());
-                    }
-                    if (m.getEndDate() != null) {
+
+                    if (m.getEndDate() != null)
                         marriageEl.setAttribute("endDate", m.getEndDate().toString());
-                    }
-                    if (m.getEndArea() != null) {
+
+                    if (m.getEndArea() != null)
                         marriageEl.setAttribute("endArea", m.getEndArea());
-                    }
-                    if (m.getEndCountry() != null) {
+
+                    if (m.getEndCountry() != null)
                         marriageEl.setAttribute("endCountry", m.getEndCountry());
-                    }
+
                     marriageElements.add(marriageEl);
                     seenMarriages.add(key);
                 }
@@ -223,7 +213,6 @@ public final class FamilyTreeRW {
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 
-        // Write XML to file
         var source = new DOMSource(doc);
         var result = new StreamResult(new File(filePath));
         transformer.transform(source, result);

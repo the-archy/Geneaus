@@ -50,7 +50,7 @@ public class Person implements Comparable<Person> {
     public void setDeathDate(LocalDate dd) { this.deathDate = dd; }
     public LocalDate getDeathDate() { return deathDate; }
 
-    public List<Person> getDescendants() { return Collections.unmodifiableList(descendants); }
+    public List<Person> getDescendants() { return descendants; }
 
     public List<Person> getParents() {
         return Stream.of(parent1, parent2)
@@ -60,7 +60,7 @@ public class Person implements Comparable<Person> {
 
     public void addMarriage(Marriage m) { marriages.add(m); }
 
-    public List<Marriage> getMarriages() { return Collections.unmodifiableList(marriages); }
+    public List<Marriage> getMarriages() { return marriages; }
 
     public Marriage getMarriageWith(Person partner) {
         return marriages.stream()
@@ -84,13 +84,32 @@ public class Person implements Comparable<Person> {
     }
 
     public List<Person> getSharedDescendantsWith(Person partner) {
+
         return getDescendants().stream()
             .filter(child ->
                 (Objects.equals(child.getParent1(), this) && Objects.equals(child.getParent2(), partner)) ||
                 (Objects.equals(child.getParent2(), this) && Objects.equals(child.getParent1(), partner))
-            ).toList();
+            ).distinct().toList();
     }
 
+    public static Person getPersonByID(List<Person> people, String id) {
+        return people.stream()
+                     .filter(p -> p.getId().equals(id))
+                     .findFirst()
+                     .orElse(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Person)) return false;
+        return id.equals(((Person) o).id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 
     @Override
     public String toString() {

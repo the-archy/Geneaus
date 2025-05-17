@@ -9,6 +9,7 @@ module com.example.geneus {
     requires eu.hansolo.tilesfx;
 
     requires transitive javafx.graphics;
+    requires javafx.base;
 
 
     opens com.archy.geneus to javafx.fxml;
