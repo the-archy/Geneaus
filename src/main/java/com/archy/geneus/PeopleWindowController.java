@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.*;
 
@@ -27,6 +28,7 @@ public class PeopleWindowController {
 
     @FXML
     public void initialize() {
+
         loadMenuItem.setOnAction(e -> onLoad());
         saveMenuItem.setOnAction(e -> onSave());
         idCol.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getId()));
@@ -53,14 +55,16 @@ public class PeopleWindowController {
             people = FXCollections.observableArrayList(
                 FamilyTreeRW.loadFamilyTree("family_tree.xml")
             );
+            GenealogyApp.log("Loaded family tree from file 'family_tree.xml'");
 
         } catch (Exception e) {
             e.printStackTrace();
+            GenealogyApp.log("Failed to load family tree from file 'family_tree.xml': " + e.getMessage());
             people = FXCollections.observableArrayList();
         }
+
         peopleTable.setItems(people);
 
-        // Default root (first person)
         if (!people.isEmpty()) {
             rootPerson = people.get(0);
             peopleTable.getSelectionModel().select(rootPerson);
@@ -68,6 +72,7 @@ public class PeopleWindowController {
 
         peopleTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             rootPerson = newVal;
+            GenealogyApp.log("Selected person: " + (newVal != null ? newVal.getDisplayName() : "null"));
             redrawTree();
         });
 
@@ -78,12 +83,18 @@ public class PeopleWindowController {
         if (rootPerson != null) {
             Pane tree = new TreeBuilder(rootPerson).build();
             treeScroll.setContent(tree);
+            Platform.runLater(() -> {
+                treeScroll.setVvalue(0);
+                treeScroll.setHvalue(0);
+            });
         }
     }
 
     private Person showPersonDialog(Person toEdit) {
         try {
             var loader = new FXMLLoader(getClass().getResource("/PersonDialog.fxml"));
+            GenealogyApp.log("Loaded PersonDialog.fxml");
+
             DialogPane dialogPane = loader.load();
             PersonDialogController controller = loader.getController();
             controller.setData(people, toEdit);
@@ -99,12 +110,14 @@ public class PeopleWindowController {
 
             dialog.setResultConverter(bt -> bt);
             var result = dialog.showAndWait();
+            GenealogyApp.log("Dialog result: " + result);
 
             if (result.isPresent() && result.get() == okButton)
                 return controller.getResult();
 
         } catch (Exception e) {
             e.printStackTrace();
+            GenealogyApp.log("Failed to show person dialog: " + e.getMessage());
         }
 
         return null;
@@ -115,11 +128,13 @@ public class PeopleWindowController {
     private void onAdd() {
 
         Person newPerson = showPersonDialog(null);
+        GenealogyApp.log("New person: " + (newPerson != null ? newPerson.getDisplayName() : "null"));
 
         if (newPerson != null) {
             people.add(newPerson);
             peopleTable.getSelectionModel().select(newPerson);
             saveAndRedraw();
+            GenealogyApp.log("Added new person: " + newPerson.getDisplayName());
         }
     }
 
@@ -129,6 +144,7 @@ public class PeopleWindowController {
         Person selected = peopleTable.getSelectionModel().getSelectedItem();
 
         if (selected != null) {
+            GenealogyApp.log("Editing person: " + selected.getDisplayName());
             Person updated = showPersonDialog(selected);
             if (updated != null) {
                 peopleTable.refresh();
@@ -154,6 +170,7 @@ public class PeopleWindowController {
             var result = alert.showAndWait();
 
             if (result.isPresent() && result.get() == ButtonType.OK) {
+                GenealogyApp.log("Deleting person: " + (selected != null ? selected.getDisplayName() : "null"));
                 removePersonEverywhere(selected);
                 people.remove(selected);
                 saveAndRedraw();
@@ -170,7 +187,7 @@ public class PeopleWindowController {
             p.getParent2().getDescendants().remove(p);
 
 
-        for (Person other : people) {
+        for (var other : people) {
 
             if (other.getParent1() != null && other.getParent1().equals(p))
                 other.setParent1(null);
@@ -183,7 +200,7 @@ public class PeopleWindowController {
 
             List<Marriage> toRemove = new ArrayList<>();
 
-            for (Marriage m : other.getMarriages())
+            for (var m : other.getMarriages())
                 if (m.getSpouse().equals(p))
                     toRemove.add(m);
 
@@ -192,6 +209,8 @@ public class PeopleWindowController {
 
         p.setParent1(null);
         p.setParent2(null);
+
+        GenealogyApp.log("Removed person: " + p.getDisplayName());
     }
 
 
@@ -218,6 +237,7 @@ public class PeopleWindowController {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 showError("Failed to load file:\n" + ex.getMessage());
+                GenealogyApp.log("Failed to load file: " + ex.getMessage());
             }
         }
     }
@@ -237,6 +257,7 @@ public class PeopleWindowController {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 showError("Failed to save file:\n" + ex.getMessage());
+                GenealogyApp.log("Failed to save file: " + ex.getMessage());
             }
         }
     }
@@ -262,6 +283,7 @@ public class PeopleWindowController {
         alert.setTitle("Exit");
         alert.initOwner(peopleTable.getScene().getWindow());
         if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
+            GenealogyApp.log("Exiting Geneus");
             var stage = (Stage) peopleTable.getScene().getWindow();
             stage.close();
         }

@@ -27,6 +27,7 @@ public final class FamilyTreeRW {
         var doc = db.parse(new File(filePath));
         doc.getDocumentElement().normalize();
 
+
         var personsWrap = (Element) doc.getElementsByTagName("persons").item(0);
         var persons = personsWrap.getElementsByTagName("person");
 

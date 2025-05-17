@@ -16,10 +16,8 @@ public class PersonDialogController {
     private List<Person> allPeople;
     private Person editingPerson;
 
-
-
-
     public void setData(List<Person> allPeople, Person editingPerson) {
+
         this.allPeople = allPeople;
         this.editingPerson = editingPerson;
 
@@ -28,6 +26,7 @@ public class PersonDialogController {
 
         parent1Combo.getItems().add(null);
         parent2Combo.getItems().add(null);
+
         for (Person p : allPeople) {
             if (editingPerson == null || !p.equals(editingPerson)) {
                 parent1Combo.getItems().add(p);
@@ -65,26 +64,29 @@ public class PersonDialogController {
 
 
     public Person getResult() {
+
         String name = nameField.getText().trim();
         LocalDate birth = birthDatePicker.getValue();
         LocalDate death = deathDatePicker.getValue();
         Person p1 = parent1Combo.getValue();
         Person p2 = parent2Combo.getValue();
 
-        // Validation
         if (name.isEmpty()) return null;
+
         if (birth != null && death != null && death.isBefore(birth)) {
             showError("Death before birth!");
             return null;
         }
+
         if (p1 != null && p2 != null && p1.equals(p2)) {
             showError("Parents must be different!");
             return null;
         }
-        // Build the person
+
         Person result = editingPerson == null
                 ? new Person(generateUniqueId(allPeople), name)
                 : editingPerson;
+
         result.setBirthDate(birth);
         result.setDeathDate(death);
         result.setParent1(p1);
