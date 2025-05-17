@@ -27,9 +27,9 @@ public class TreeBuilder {
     }
 
     public Pane build() {
-        Pane pane = new Pane();
+        var pane = new Pane();
 
-        PersonNode rootNode = new PersonNode(root);
+        var rootNode = new PersonNode(root);
         rootNode.setLayoutX(INITIAL_X);
         rootNode.setLayoutY(INITIAL_Y);
         pane.getChildren().add(rootNode);
@@ -47,8 +47,9 @@ public class TreeBuilder {
     private void buildParentalTree(Pane pane, PersonNode childNode, List<Person> parents) {
 
         if (parents.size() == 1) {
+
             Person soleParent = parents.get(0);
-            PersonNode parentNode = new PersonNode(soleParent);
+            var parentNode = new PersonNode(soleParent);
 
             double childX = childNode.getLayoutX();
             double childY = childNode.getLayoutY();
@@ -63,8 +64,8 @@ public class TreeBuilder {
         Person parent1 = parents.get(0);
         Person parent2 = parents.get(1);
 
-        PersonNode parentNode1 = new PersonNode(parent1);
-        PersonNode parentNode2 = new PersonNode(parent2);
+        var parentNode1 = new PersonNode(parent1);
+        var parentNode2 = new PersonNode(parent2);
 
         double childX = childNode.getLayoutX();
         double childY = childNode.getLayoutY();
@@ -91,6 +92,7 @@ public class TreeBuilder {
                 parentNode2.getLeftAnchor().getX(),
                 parentNode2.getLeftAnchor().getY()
             );
+
             coupleLine.getStyleClass().add("relation-line");
             pane.getChildren().add(coupleLine);
 
@@ -98,8 +100,7 @@ public class TreeBuilder {
             double lineY = coupleLine.getStartY();
             double forkY = childY - 30;
 
-            // vertical connector down to child
-            Line downLine = new Line(midX, lineY, midX, forkY);
+            var downLine = new Line(midX, lineY, midX, forkY);
             downLine.getStyleClass().add("relation-line");
             pane.getChildren().add(downLine);
 
@@ -107,13 +108,12 @@ public class TreeBuilder {
             if (marriageLabel != null) {
                 marriageLabel.getStyleClass().add("on-line-label");
                 pane.getChildren().add(marriageLabel);
-
-                // position label centered above the horizontal line
                 marriageLabel.widthProperty().addListener((obs, oldVal, newVal) -> {
                     marriageLabel.setLayoutX(midX - marriageLabel.getWidth() / 2);
-                    marriageLabel.setLayoutY(lineY - marriageLabel.getHeight() - 30);
+                    marriageLabel.setLayoutY(lineY - marriageLabel.getHeight() + LABEL_OFFSET_MULT * marriageLabel.getHeight());
                 });
             }
+
 
             List<Person> siblings = parent1.getSharedDescendantsWith(parent2);
             buildSharedDescendantsFork(pane, midX, forkY, childY, siblings, childNode);
@@ -121,6 +121,7 @@ public class TreeBuilder {
     }
 
     private void buildPartnerTree(Pane pane, PersonNode rootNode) {
+
         List<Person> partners = root.getPartners();
         double baseSpacing = PARTNER_SPACING;
         double rootCenterX = rootNode.getLayoutX() + PersonNode.WIDTH / 2;
@@ -128,55 +129,55 @@ public class TreeBuilder {
 
         for (int i = 0; i < partners.size(); i++) {
 
-            Person partner = partners.get(i);
+            var partner = partners.get(i);
             var marriage = partner.getMarriageWith(root);
-            Label marriageLabel = createMarriageLabel(marriage);
-            Label divorceLabel = createDivorceLabel(marriage);
-
+            var marriageLabel = createMarriageLabel(marriage);
+            var divorceLabel = createDivorceLabel(marriage);
 
             double spacingNeeded = baseSpacing;
             if (marriageLabel != null)
                 spacingNeeded += marriageLabel.getHeight() * PARTNER_SPACING;
+
             if (divorceLabel != null)
                 spacingNeeded += divorceLabel.getHeight() * PARTNER_SPACING;
 
             currentX += spacingNeeded;
 
-            PersonNode partnerNode = new PersonNode(partner);
+            var partnerNode = new PersonNode(partner);
             partnerNode.setLayoutX(currentX);
             partnerNode.setLayoutY(rootNode.getLayoutY());
             pane.getChildren().add(partnerNode);
 
-            Line coupleLine = new Line(
+            var coupleLine = new Line(
                 rootNode.getRightAnchor().getX(),
                 rootNode.getRightAnchor().getY(),
                 partnerNode.getLeftAnchor().getX(),
                 partnerNode.getLeftAnchor().getY()
             );
+
             coupleLine.getStyleClass().add("relation-line");
             pane.getChildren().add(coupleLine);
 
             if (marriageLabel != null) {
                 pane.getChildren().add(marriageLabel);
                 marriageLabel.getStyleClass().add("on-line-label");
-
-                Platform.runLater(() -> {
-                    double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
-                    double lineY = rootNode.getRightAnchor().getY();
+                double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
+                double lineY = rootNode.getRightAnchor().getY();
+                marriageLabel.widthProperty().addListener((obs, oldVal, newVal) -> {
                     marriageLabel.setLayoutX(midX - marriageLabel.getWidth() / 2);
                     marriageLabel.setLayoutY(lineY - marriageLabel.getHeight() + LABEL_OFFSET_MULT * marriageLabel.getHeight());
                 });
             }
 
+
+
             if (divorceLabel != null) {
                 pane.getChildren().add(divorceLabel);
                 divorceLabel.getStyleClass().add("on-line-label");
-
-                Platform.runLater(() -> {
-                    double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
-                    double lineY = rootNode.getRightAnchor().getY();
-                    divorceLabel.setLayoutX(midX - divorceLabel.getWidth() / 2);
-                    divorceLabel.setLayoutY(lineY - divorceLabel.getHeight() + divorceLabel.getHeight() * (LABEL_OFFSET_MULT + (marriageLabel != null ? ADDITIONAL_LABEL_OFFSET : 0)));
+                divorceLabel.setUserData(new double[]{
+                    (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2,
+                    rootNode.getRightAnchor().getY(),
+                    (marriageLabel != null ? 1 : 0)
                 });
             }
 
@@ -197,7 +198,7 @@ public class TreeBuilder {
 
         double horizontalLineY = childY - FORK_LINE_HEIGHT;
 
-        Line verticalLine = new Line(midX, parentY, midX, horizontalLineY);
+        var verticalLine = new Line(midX, parentY, midX, horizontalLineY);
         verticalLine.getStyleClass().add("relation-line");
         pane.getChildren().add(verticalLine);
 
@@ -214,8 +215,9 @@ public class TreeBuilder {
         }
 
         for (int i = 0; i < descendants.size(); i++) {
+
             Person child = descendants.get(i);
-            PersonNode childNode = new PersonNode(child);
+            var childNode = new PersonNode(child);
 
             double x = startX + i * CHILD_SPACING;
             childNode.setLayoutX(x);
@@ -223,7 +225,7 @@ public class TreeBuilder {
             pane.getChildren().add(childNode);
 
             double childCenterX = x + PersonNode.WIDTH / 2;
-            Line childLine = new Line(childCenterX, horizontalLineY, childCenterX, childY);
+            var childLine = new Line(childCenterX, horizontalLineY, childCenterX, childY);
             childLine.getStyleClass().add("relation-line");
             pane.getChildren().add(childLine);
         }
@@ -237,7 +239,7 @@ public class TreeBuilder {
                 ? " " + marriage.getStartArea() + ", " + marriage.getStartCountry()
                 : "";
 
-        Label label = new Label("♥ " + dateStr + locationStr);
+        var label = new Label("♥ " + dateStr + locationStr);
         label.getStyleClass().add("marriage-label");
         return label;
     }
@@ -250,12 +252,13 @@ public class TreeBuilder {
                 ? " " + marriage.getEndArea() + ", " + marriage.getEndCountry()
                 : "";
 
-        Label label = new Label("✗ " + dateStr + locationStr);
+        var label = new Label("✗ " + dateStr + locationStr);
         label.getStyleClass().add("divorce-label");
         return label;
     }
 
     private void buildSharedDescendantsFork(Pane pane, double midX, double forkY, double nodeY, List<Person> people, PersonNode referenceNode) {
+
         if (people.isEmpty()) return;
 
         List<Person> sorted = new ArrayList<>(people);
@@ -282,14 +285,14 @@ public class TreeBuilder {
             Person p = sorted.get(i);
             if (p.equals(root)) continue;
 
-            PersonNode node = new PersonNode(p);
+            var node = new PersonNode(p);
             double x = startX + i * SIBLING_SPACING - PersonNode.WIDTH / 2;
             node.setLayoutX(x);
             node.setLayoutY(nodeY);
             pane.getChildren().add(node);
 
             double centerX = x + PersonNode.WIDTH / 2;
-            Line down = new Line(centerX, forkY, centerX, nodeY);
+            var down = new Line(centerX, forkY, centerX, nodeY);
             down.getStyleClass().add("relation-line");
             pane.getChildren().add(down);
         }
@@ -298,7 +301,7 @@ public class TreeBuilder {
             double rootX = startX + rootIndex * SIBLING_SPACING - PersonNode.WIDTH / 2;
             referenceNode.setLayoutX(rootX);
 
-            Line lineToRef = new Line(midX + totalWidth / sorted.size(), forkY, referenceNode.getTopAnchor().getX(), referenceNode.getTopAnchor().getY());
+            var lineToRef = new Line(referenceNode.getTopAnchor().getX(), forkY, referenceNode.getTopAnchor().getX(), referenceNode.getTopAnchor().getY());
             lineToRef.getStyleClass().add("relation-line");
             pane.getChildren().add(lineToRef);
         }
@@ -350,6 +353,7 @@ public class TreeBuilder {
             }
 
             pane.setPrefSize(contentWidth + 200, contentHeight + 200);
+
         });
     }
 

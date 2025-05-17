@@ -12,8 +12,8 @@ public class GenealogyApp extends javafx.application.Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/PeopleWindow.fxml"));
-        Scene scene = new Scene(loader.load(), 1200, 800);
+        var loader = new FXMLLoader(getClass().getResource("/PeopleWindow.fxml"));
+        var scene = new Scene(loader.load(), 1200, 800);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Geneus - All People");
         primaryStage.show();

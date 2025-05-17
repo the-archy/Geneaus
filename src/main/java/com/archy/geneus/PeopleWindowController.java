@@ -49,7 +49,6 @@ public class PeopleWindowController {
         ));
 
 
-        // Load people (replace with actual file loading)
         try {
             people = FXCollections.observableArrayList(
                 FamilyTreeRW.loadFamilyTree("family_tree.xml")
@@ -84,7 +83,7 @@ public class PeopleWindowController {
 
     private Person showPersonDialog(Person toEdit) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PersonDialog.fxml"));
+            var loader = new FXMLLoader(getClass().getResource("/PersonDialog.fxml"));
             DialogPane dialogPane = loader.load();
             PersonDialogController controller = loader.getController();
             controller.setData(people, toEdit);
@@ -101,19 +100,22 @@ public class PeopleWindowController {
             dialog.setResultConverter(bt -> bt);
             var result = dialog.showAndWait();
 
-            if (result.isPresent() && result.get() == okButton) {
+            if (result.isPresent() && result.get() == okButton)
                 return controller.getResult();
-            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
 
     @FXML
     private void onAdd() {
+
         Person newPerson = showPersonDialog(null);
+
         if (newPerson != null) {
             people.add(newPerson);
             peopleTable.getSelectionModel().select(newPerson);
@@ -123,11 +125,12 @@ public class PeopleWindowController {
 
     @FXML
     private void onEdit() {
+
         Person selected = peopleTable.getSelectionModel().getSelectedItem();
+
         if (selected != null) {
             Person updated = showPersonDialog(selected);
             if (updated != null) {
-                // If the dialog returns the same instance (edited in place), just refresh the table
                 peopleTable.refresh();
                 saveAndRedraw();
             }
@@ -136,14 +139,20 @@ public class PeopleWindowController {
 
     @FXML
     private void onDelete() {
+
         Person selected = peopleTable.getSelectionModel().getSelectedItem();
+
         if (selected != null) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+
+            var alert = new Alert(Alert.AlertType.CONFIRMATION);
+
             alert.setTitle("Delete Person");
             alert.setHeaderText("Do you really want to delete this person?");
             alert.setContentText("Name: " + selected.getDisplayName());
             alert.initOwner(peopleTable.getScene().getWindow());
+
             var result = alert.showAndWait();
+
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 removePersonEverywhere(selected);
                 people.remove(selected);
@@ -153,31 +162,34 @@ public class PeopleWindowController {
     }
 
     private void removePersonEverywhere(Person p) {
-        if (p.getParent1() != null) {
+
+        if (p.getParent1() != null)
             p.getParent1().getDescendants().remove(p);
-        }
-        if (p.getParent2() != null) {
+
+        if (p.getParent2() != null)
             p.getParent2().getDescendants().remove(p);
-        }
+
 
         for (Person other : people) {
-            if (other.getParent1() != null && other.getParent1().equals(p)) {
+
+            if (other.getParent1() != null && other.getParent1().equals(p))
                 other.setParent1(null);
-            }
-            if (other.getParent2() != null && other.getParent2().equals(p)) {
+
+            if (other.getParent2() != null && other.getParent2().equals(p))
                 other.setParent2(null);
-            }
+
 
             other.getDescendants().remove(p);
 
             List<Marriage> toRemove = new ArrayList<>();
-            for (Marriage m : other.getMarriages()) {
-                if (m.getSpouse().equals(p)) {
+
+            for (Marriage m : other.getMarriages())
+                if (m.getSpouse().equals(p))
                     toRemove.add(m);
-                }
-            }
+
             other.getMarriages().removeAll(toRemove);
         }
+
         p.setParent1(null);
         p.setParent2(null);
     }
@@ -185,18 +197,23 @@ public class PeopleWindowController {
 
 
     private void onLoad() {
+
         var fc = new FileChooser();
         fc.setTitle("Open Family Tree File");
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML Files", "*.xml"));
         File file = fc.showOpenDialog(peopleTable.getScene().getWindow());
+
         if (file != null) {
             try {
                 people = FXCollections.observableArrayList(FamilyTreeRW.loadFamilyTree(file.getAbsolutePath()));
+
                 peopleTable.setItems(people);
+
                 if (!people.isEmpty()) {
                     rootPerson = people.get(0);
                     peopleTable.getSelectionModel().select(rootPerson);
                 }
+
                 redrawTree();
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -206,10 +223,14 @@ public class PeopleWindowController {
     }
 
     private void onSave() {
+
         var fc = new FileChooser();
+
         fc.setTitle("Save Family Tree File");
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("XML Files", "*.xml"));
+
         File file = fc.showSaveDialog(peopleTable.getScene().getWindow());
+
         if (file != null) {
             try {
                 FamilyTreeRW.saveFamilyTree(people, file.getAbsolutePath());
@@ -236,12 +257,12 @@ public class PeopleWindowController {
 
     @FXML
     private void onExit() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Really exit Geneus?", ButtonType.YES, ButtonType.NO);
+        var alert = new Alert(Alert.AlertType.CONFIRMATION, "Really exit Geneus?", ButtonType.YES, ButtonType.NO);
         alert.setHeaderText("Exit");
         alert.setTitle("Exit");
         alert.initOwner(peopleTable.getScene().getWindow());
         if (alert.showAndWait().orElse(ButtonType.NO) == ButtonType.YES) {
-            Stage stage = (Stage) peopleTable.getScene().getWindow();
+            var stage = (Stage) peopleTable.getScene().getWindow();
             stage.close();
         }
     }

@@ -84,7 +84,6 @@ public class Person implements Comparable<Person> {
     }
 
     public List<Person> getSharedDescendantsWith(Person partner) {
-
         return getDescendants().stream()
             .filter(child ->
                 (Objects.equals(child.getParent1(), this) && Objects.equals(child.getParent2(), partner)) ||
