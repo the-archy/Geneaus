@@ -51,6 +51,8 @@ public class GenealogyApp extends javafx.application.Application {
         var scene = new Scene(loader.load(), 1200, 800);
         log("Loaded scene");
 
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+
         primaryStage.setScene(scene);
         primaryStage.setTitle("Geneus");
         primaryStage.show();

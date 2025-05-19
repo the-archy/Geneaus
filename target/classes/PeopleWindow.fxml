@@ -15,9 +15,9 @@
         </MenuBar>
         <Button text="Exit" onAction="#onExit"/>
     </HBox>
-    <SplitPane dividerPositions="0.36">
+    <SplitPane dividerPositions="0.36" VBox.vgrow="ALWAYS">
         <!-- Left: Controls + Table -->
-        <VBox spacing="4" prefWidth="350">
+        <VBox spacing="4" prefWidth="350" minWidth="200" maxWidth="700">
             <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 4;">
                 <Button text="Add" onAction="#onAdd"/>
                 <Button text="Edit" onAction="#onEdit"/>
@@ -35,6 +35,10 @@
             </TableView>
         </VBox>
         <!-- Right: Tree ScrollPane -->
-        <ScrollPane fx:id="treeScroll" fitToWidth="false" fitToHeight="false" prefWidth="900" prefHeight="700"/>
+        <ScrollPane fx:id="treeScroll" fitToWidth="false" fitToHeight="false" VBox.vgrow="ALWAYS">
+            <content>
+                <Pane fx:id="treePane" minWidth="600" minHeight="400"/>
+            </content>
+        </ScrollPane>
     </SplitPane>
 </VBox>

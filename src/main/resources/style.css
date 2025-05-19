@@ -1,19 +1,12 @@
-.on-line-label {
-    -fx-font-size: 12px;
-    -fx-background-color: white;
-    -fx-padding: 2 4 2 4;
-    -fx-background-radius: 3;
-    -fx-border-color: #e6109b;
-    -fx-border-radius: 3;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
-}
 
-.marriage-label {
-    -fx-border-color: #e6109b;
-}
-
-.divorce-label {
-    -fx-border-color: #2e2a2a;
+.marriage-label, .divorce-label {
+    -fx-font-size: 13px;
+    -fx-padding: 4 14 4 14;
+    -fx-background-color: #fff6, #fff;
+    -fx-background-radius: 8;
+    -fx-border-color: #aaa;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, #0002, 1, 1, 0, 1);
 }
 
 .relation-line {

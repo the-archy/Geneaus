@@ -1,7 +1,5 @@
 package com.archy.geneus;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -15,14 +13,20 @@ public class TreeBuilder {
 
     private final Person root;
 
-    private static final double INITIAL_X = 0;
-    private static final double INITIAL_Y = 0;
-    private static final double SIBLING_SPACING = 160;
     private static final double PARTNER_SPACING = 200;
-    private static final double CHILD_SPACING = 150;
-    private static final double PANE_PADDING = 100;
-    private static final double MARRIAGE_LABEL_OFFSET_Y = 15;
-    private static final double DIVORCE_LABEL_OFFSET_Y = 15;
+    private static final double DESCENDANT_SPACING = 150;
+    private static final double PANE_PADDING = 30;
+
+    private static class LabelPlacement {
+        Label label;
+        Line coupleLine;
+        boolean isMarriage;
+        LabelPlacement(Label l, Line ln, boolean marriage) {
+            label = l; coupleLine = ln; isMarriage = marriage;
+        }
+    }
+
+    private final List<LabelPlacement> labelPlacements = new ArrayList<>();
 
 
     public TreeBuilder(Person root) {
@@ -33,8 +37,6 @@ public class TreeBuilder {
         var pane = new Pane();
 
         var rootNode = new PersonNode(root);
-        rootNode.setLayoutX(INITIAL_X);
-        rootNode.setLayoutY(INITIAL_Y);
         pane.getChildren().add(rootNode);
 
         List<Person> parents = root.getParents();
@@ -46,9 +48,6 @@ public class TreeBuilder {
         adjustPaneLayout(pane);
         return pane;
     }
-
-
-
 
     private void buildParentalTree(Pane pane, PersonNode childNode, List<Person> parents) {
 
@@ -87,10 +86,7 @@ public class TreeBuilder {
 
         pane.getChildren().addAll(parentNode1, parentNode2);
 
-        Marriage marriage = parent1.getMarriageWith(parent2);
-        boolean hasCommonChild = parent1.getSharedDescendantsWith(parent2).contains(root);
-
-        if (marriage != null || hasCommonChild) {
+        if (parent1.getSharedDescendantsWith(parent2).contains(root)) {
 
             Line coupleLine = new Line(
                 parentNode1.getRightAnchor().getX(),
@@ -110,43 +106,22 @@ public class TreeBuilder {
             downLine.getStyleClass().add("relation-line");
             pane.getChildren().add(downLine);
 
-            Label marriageLabel = createMarriageLabel(marriage);
-            if (marriageLabel != null) {
-                marriageLabel.getStyleClass().add("marriage-label");
+
+            Marriage marriage = parent1.getMarriageWith(parent2);
+
+
+            if (marriage != null) {
+
+                Label marriageLabel = createMarriageLabel(marriage);
                 pane.getChildren().add(marriageLabel);
-                Platform.runLater(() -> {
-                    // 1) znovu načti skutečné souřadnice linky
-                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
-                    double realLineY = coupleLine.getStartY();
+                labelPlacements.add(new LabelPlacement(marriageLabel, coupleLine, true));
 
-                    marriageLabel.applyCss();
-                    marriageLabel.layout();
-                    double w = marriageLabel.getWidth();
-                    double h = marriageLabel.getHeight();
 
-                    // 2) centrování + odsazení
-                    marriageLabel.setLayoutX(realMidX - w / 2);
-                    marriageLabel.setLayoutY(realLineY - h - MARRIAGE_LABEL_OFFSET_Y);
-                });
-
-            }
-
-            Label divorceLabel = createDivorceLabel(marriage);
-            if (divorceLabel != null) {
-                divorceLabel.getStyleClass().add("divorce-label");
+                Label divorceLabel = createDivorceLabel(marriage);
                 pane.getChildren().add(divorceLabel);
-                Platform.runLater(() -> {
-                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
-                    double realLineY = coupleLine.getStartY();
-
-                    divorceLabel.applyCss();
-                    divorceLabel.layout();
-
-                    divorceLabel.setLayoutX(realMidX - divorceLabel.getWidth() / 2);
-                    divorceLabel.setLayoutY(realLineY + DIVORCE_LABEL_OFFSET_Y);
-                });
-
+                labelPlacements.add(new LabelPlacement(divorceLabel, coupleLine, false));
             }
+
 
             List<Person> siblings = parent1.getSharedDescendantsWith(parent2);
             buildSharedDescendantsFork(pane, midX, forkY, childY, siblings, childNode);
@@ -169,10 +144,10 @@ public class TreeBuilder {
 
             double spacingNeeded = baseSpacing;
             if (marriageLabel != null)
-                spacingNeeded += marriageLabel.getHeight() * PARTNER_SPACING;
+                spacingNeeded += marriageLabel.getWidth();
 
             if (divorceLabel != null)
-                spacingNeeded += divorceLabel.getHeight() * PARTNER_SPACING;
+                spacingNeeded += Math.max(divorceLabel.getWidth(), marriageLabel.getWidth());
 
             currentX += spacingNeeded;
 
@@ -193,37 +168,14 @@ public class TreeBuilder {
 
             if (marriageLabel != null) {
                 pane.getChildren().add(marriageLabel);
-                Platform.runLater(() -> {
-                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
-                    double realLineY = coupleLine.getStartY();
-
-                    marriageLabel.applyCss();
-                    marriageLabel.layout();
-
-                    marriageLabel.setLayoutX(realMidX - marriageLabel.getWidth() / 2);
-                    marriageLabel.setLayoutY(realLineY - marriageLabel.getHeight() - MARRIAGE_LABEL_OFFSET_Y);
-
-
-                    System.out.println("Marriage label: " + marriageLabel.getLayoutX() + ", " + marriageLabel.getLayoutY());
-                });
+                labelPlacements.add(new LabelPlacement(marriageLabel, coupleLine, true));
             }
 
             if (divorceLabel != null) {
                 pane.getChildren().add(divorceLabel);
-                Platform.runLater(() -> {
-                    double realMidX = (coupleLine.getStartX() + coupleLine.getEndX()) / 2;
-                    double realLineY = coupleLine.getStartY();
-
-                    divorceLabel.applyCss();
-                    divorceLabel.layout();
-
-                    divorceLabel.setLayoutX(realMidX - divorceLabel.getWidth() / 2);
-                    divorceLabel.setLayoutY(realLineY + DIVORCE_LABEL_OFFSET_Y);
-                    System.out.println("Divorce label: " + divorceLabel.getLayoutX() + ", " + divorceLabel.getLayoutY());
-                });
-
-
+                labelPlacements.add(new LabelPlacement(divorceLabel, coupleLine, false));
             }
+
 
             buildDescendantsTree(pane, rootNode, partnerNode, root.getSharedDescendantsWith(partner));
         }
@@ -238,7 +190,7 @@ public class TreeBuilder {
 
         double midX = (rootNode.getRightAnchor().getX() + partnerNode.getLeftAnchor().getX()) / 2;
         double parentY = rootNode.getLeftAnchor().getY();
-        double childY = parentY + CHILD_SPACING;
+        double childY = parentY + DESCENDANT_SPACING;
 
         double horizontalLineY = childY - FORK_LINE_HEIGHT;
 
@@ -246,12 +198,12 @@ public class TreeBuilder {
         verticalLine.getStyleClass().add("relation-line");
         pane.getChildren().add(verticalLine);
 
-        double childTotalWidth = descendants.size() * PersonNode.WIDTH + (descendants.size() - 1) * (CHILD_SPACING - PersonNode.WIDTH);
+        double childTotalWidth = descendants.size() * PersonNode.WIDTH + (descendants.size() - 1) * (DESCENDANT_SPACING - PersonNode.WIDTH);
         double startX = midX - childTotalWidth / 2;
 
         if (descendants.size() > 0) {
             double leftMostX = startX + PersonNode.WIDTH/2;
-            double rightMostX = startX + (descendants.size() - 1) * CHILD_SPACING + PersonNode.WIDTH/2;
+            double rightMostX = startX + (descendants.size() - 1) * DESCENDANT_SPACING + PersonNode.WIDTH/2;
 
             Line horizontalLine = new Line(leftMostX, horizontalLineY, rightMostX, horizontalLineY);
             horizontalLine.getStyleClass().add("relation-line");
@@ -263,7 +215,7 @@ public class TreeBuilder {
             Person child = descendants.get(i);
             var childNode = new PersonNode(child);
 
-            double x = startX + i * CHILD_SPACING;
+            double x = startX + i * DESCENDANT_SPACING;
             childNode.setLayoutX(x);
             childNode.setLayoutY(childY);
             pane.getChildren().add(childNode);
@@ -316,7 +268,7 @@ public class TreeBuilder {
             }
         }
 
-        double totalWidth = (sorted.size() - 1) * SIBLING_SPACING;
+        double totalWidth = (sorted.size() - 1) * DESCENDANT_SPACING;
         double startX = midX - totalWidth / 2;
 
         if (sorted.size() > 1) {
@@ -330,7 +282,7 @@ public class TreeBuilder {
             if (p.equals(root)) continue;
 
             var node = new PersonNode(p);
-            double x = startX + i * SIBLING_SPACING - PersonNode.WIDTH / 2;
+            double x = startX + i * DESCENDANT_SPACING - PersonNode.WIDTH / 2;
             node.setLayoutX(x);
             node.setLayoutY(nodeY);
             pane.getChildren().add(node);
@@ -342,7 +294,7 @@ public class TreeBuilder {
         }
 
         if (referenceNode != null && rootIndex >= 0) {
-            double rootX = startX + rootIndex * SIBLING_SPACING - PersonNode.WIDTH / 2;
+            double rootX = startX + rootIndex * DESCENDANT_SPACING - PersonNode.WIDTH / 2;
             referenceNode.setLayoutX(rootX);
 
             var lineToRef = new Line(referenceNode.getTopAnchor().getX(), forkY, referenceNode.getTopAnchor().getX(), referenceNode.getTopAnchor().getY());
@@ -362,11 +314,6 @@ public class TreeBuilder {
                     maxX = Math.max(maxX, p.getLayoutX() + PersonNode.WIDTH);
                     minY = Math.min(minY, p.getLayoutY());
                     maxY = Math.max(maxY, p.getLayoutY() + PersonNode.HEIGHT);
-                } else if (node instanceof Label label) {
-                    minX = Math.min(minX, label.getLayoutX());
-                    maxX = Math.max(maxX, label.getLayoutX() + label.getWidth());
-                    minY = Math.min(minY, label.getLayoutY());
-                    maxY = Math.max(maxY, label.getLayoutY() + label.getHeight());
                 } else if (node instanceof Line l) {
                     minX = Math.min(minX, Math.min(l.getStartX(), l.getEndX()));
                     maxX = Math.max(maxX, Math.max(l.getStartX(), l.getEndX()));
@@ -379,7 +326,7 @@ public class TreeBuilder {
             double contentHeight = maxY - minY;
 
             double offsetX = PANE_PADDING - minX;
-            double offsetY = PANE_PADDING - minY;
+            double offsetY = PANE_PADDING - minY + PersonNode.HEIGHT / 2;
 
             for (var node : pane.getChildren()) {
                 if (node instanceof PersonNode p) {
@@ -390,15 +337,42 @@ public class TreeBuilder {
                     l.setEndX(l.getEndX() + offsetX);
                     l.setStartY(l.getStartY() + offsetY);
                     l.setEndY(l.getEndY() + offsetY);
-                } else if (node instanceof Label label) {
-                    label.setLayoutX(label.getLayoutX() + offsetX);
-                    label.setLayoutY(label.getLayoutY() + offsetY);
                 }
             }
 
-            pane.setPrefSize(contentWidth + 200, contentHeight + 200);
+            pane.setPrefSize(contentWidth+PANE_PADDING, contentHeight+PANE_PADDING);
+        });
 
+        runAfterLayout(pane, () -> {
+            for (var lp : labelPlacements) {
+
+                lp.label.applyCss();
+                lp.label.layout();
+
+                double midX = (lp.coupleLine.getStartX() + lp.coupleLine.getEndX()) / 2;
+
+                if (lp.isMarriage) {
+                    lp.label.setLayoutX(midX - lp.label.getWidth() / 2);
+                    lp.label.setLayoutY(lp.coupleLine.getStartY() - 2.5*lp.label.getHeight());
+                } else {
+                    lp.label.setLayoutX(midX - lp.label.getWidth() / 2);
+                    lp.label.setLayoutY(lp.coupleLine.getStartY() - 3.75*lp.label.getHeight());
+                }
+            }
+            labelPlacements.clear();
+        });
+
+    }
+
+    private void runAfterLayout(Pane pane, Runnable task) {
+        pane.applyCss();
+        pane.layout();
+        Platform.runLater(() -> {
+            pane.applyCss();
+            pane.layout();
+            Platform.runLater(task);
         });
     }
+
 
 }
