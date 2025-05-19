@@ -9,8 +9,9 @@ public class Person implements Comparable<Person> {
 
     @Override
     public int compareTo(Person o) {
-        return Comparator.comparing(Person::getDisplayName)
-                         .thenComparing(Person::getBirthDate)
+
+        return Comparator.comparing(Person::getBirthDate)
+                         .thenComparing(Person::getDisplayName)
                          .compare(this, o);
     }
 
