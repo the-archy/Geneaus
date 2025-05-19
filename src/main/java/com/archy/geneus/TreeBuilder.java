@@ -325,7 +325,7 @@ public class TreeBuilder {
             double contentWidth = maxX - minX;
             double contentHeight = maxY - minY;
 
-            double offsetX = PANE_PADDING - minX;
+            double offsetX = PANE_PADDING - minX + PersonNode.HEIGHT / 2;
             double offsetY = PANE_PADDING - minY + PersonNode.HEIGHT / 2;
 
             for (var node : pane.getChildren()) {
@@ -340,7 +340,7 @@ public class TreeBuilder {
                 }
             }
 
-            pane.setPrefSize(contentWidth+PANE_PADDING, contentHeight+PANE_PADDING);
+            pane.setPrefSize(contentWidth+PANE_PADDING+ PersonNode.HEIGHT / 2, contentHeight+PANE_PADDING+ PersonNode.HEIGHT / 2);
         });
 
         runAfterLayout(pane, () -> {

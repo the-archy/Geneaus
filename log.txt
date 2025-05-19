@@ -1,4 +1,4 @@
-[2025-05-19 12:14:28.602451458 ] Loaded PeopleWindow.fxml
-[2025-05-19 12:14:28.749691214 ] Loaded family tree from file 'family_tree.xml'
-[2025-05-19 12:14:28.888799536 ] Loaded scene
-[2025-05-19 12:14:29.235998552 ] Stage shown
+[2025-05-19 12:16:46.101684963 ] Loaded PeopleWindow.fxml
+[2025-05-19 12:16:46.259208844 ] Loaded family tree from file 'family_tree.xml'
+[2025-05-19 12:16:46.396413834 ] Loaded scene
+[2025-05-19 12:16:46.742180308 ] Stage shown
